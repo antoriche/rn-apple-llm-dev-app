@@ -1,45 +1,61 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { EventEmitter } from 'events';
+import { useState } from 'react';
+import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppleLLMSession } from 'react-native-apple-llm';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+export default function App() {
+  const [response, setResponse] = useState('');
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const testLLM = async () => {
+    const eventEmitter = new EventEmitter();
+    function handleEvent(chunk: string) {
+      setResponse(prev => prev + chunk);
+    }
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+    try {
+      setResponse('');
+      const session = new AppleLLMSession();
+      await session.configure({
+        instructions: 'You are an amazing storyteller.',
+      });
+      eventEmitter.addListener('data', handleEvent);
+      const result = await session.generateText({
+        prompt: 'Tell me a story',
+        stream: eventEmitter,
+      });
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+      console.log('LLM Response:', result);
+
+      //setResponse(result);
+    } catch (error) {
+      setResponse(`Error: ${error}`);
+    } finally {
+      eventEmitter.removeListener('data', handleEvent);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      <Button title="Test Apple LLM" onPress={testLLM} />
+      <ScrollView
+        style={{
+          maxHeight: 400,
+          marginTop: 20,
+          padding: 5,
+          borderWidth: 1,
+          borderColor: 'gray',
+        }}
+      >
+        <Text style={styles.text}>{response}</Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  text: {
+    color: 'red',
+    textAlign: 'center',
   },
 });
-
-export default App;
