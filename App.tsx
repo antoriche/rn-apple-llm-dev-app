@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppleLLMSession } from 'react-native-apple-llm';
 
@@ -21,7 +21,7 @@ export default function App() {
       eventEmitter.addListener('data', handleEvent);
       const result = await session.generateText({
         prompt: 'Tell me a story',
-        stream: eventEmitter,
+        //stream: eventEmitter,
       });
 
       console.log('LLM Response:', result);
