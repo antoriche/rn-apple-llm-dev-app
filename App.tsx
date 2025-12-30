@@ -1,38 +1,27 @@
-//import { EventEmitter } from 'events';
 import React, { useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppleLLMSession } from 'react-native-apple-llm';
-import { AppleLLMSession as AppleLLMSessionLocal } from 'react-native-apple-llm-local';
 
 export default function App() {
   const [response, setResponse] = useState('');
 
   const testLLM = async () => {
-    //const eventEmitter = new EventEmitter();
-    function handleEvent(chunk: string) {
-      setResponse(prev => prev + chunk);
-    }
-
     try {
-      setResponse('loading...');
-      const session = new AppleLLMSessionLocal();
+      setResponse('');
+      const session = new AppleLLMSession();
       await session.configure({
         instructions: 'You are an amazing storyteller.',
       });
-      //eventEmitter.addListener('data', handleEvent);
-      const result = await session.generateText({
+      const result = await session.generateTextStream({
         prompt: 'Tell me a story (in less than 100 words).',
-        //stream: eventEmitter,
       });
-      setResponse(result);
+      for await (const chunk of result) {
+        setResponse(chunk);
+      }
 
       console.log('LLM Response:', result);
-
-      //setResponse(result);
     } catch (error) {
       setResponse(`Error: ${error}`);
-    } finally {
-      //eventEmitter.removeListener('data', handleEvent);
     }
   };
 
