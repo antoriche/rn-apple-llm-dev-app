@@ -18,8 +18,6 @@ export default function App() {
       for await (const chunk of result) {
         setResponse(chunk);
       }
-
-      console.log('LLM Response:', result);
     } catch (error) {
       setResponse(`Error: ${error}`);
     }
